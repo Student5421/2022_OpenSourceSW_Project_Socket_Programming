@@ -4,15 +4,16 @@
 <br>
 
 * *Members*
-    - *Stucent* 김일규, 신수환, 이충훈, 최민아 <br>
-        - Main interest : *----*
+    - *Student* 김일규, 신수환, 이충훈, 최민아<br>
+        - Main interest : *---*
             - 
-        - Main interest : *----*
+        - Main interest : *---*
             - 
-        - Main interest : *----*
+        - Main interest : *---*
             - 
-        - Main interest : *----*
+        - Main interest : *---*
             - 
+
 <br>
 
 * *Project Goal*    <br>
