@@ -33,17 +33,20 @@
         <td>---</td>
     </tr>
      <tr>
-        <td>---</td>
-        <td>---</td>
-        <td>---</td>
-    </tr>
-    <tr>
-        <td>---</td>
+        <td rowspan="2">1주(~5월 15일)</td>
+        <td>프로젝트 제안서 작성</td>
         <td>---</td>
         <td>---</td>
     </tr>
     <tr>
+        <td rowspan="2">1주(~5월 15일)</td>
+        <td>프로젝트 제안서 작성</td>
         <td>---</td>
+        <td>---</td>
+    </tr>
+    <tr>
+        <td rowspan="2">1주(~5월 15일)</td>
+        <td>프로젝트 제안서 작성</td>
         <td>---</td>
         <td>---</td>
     </tr>
