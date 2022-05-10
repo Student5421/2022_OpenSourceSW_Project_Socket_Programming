@@ -6,13 +6,13 @@
 * *Members*
     - *Student* 김일규, 신수환, 이충훈, 최민아<br>
         - Main interest : *---*
-            - 
+            - 김일규
         - Main interest : *---*
-            - 
+            - 신수환
         - Main interest : *---*
-            - 
+            - 이충훈
         - Main interest : *---*
-            - 
+            - 최민아
 
 <br>
 
