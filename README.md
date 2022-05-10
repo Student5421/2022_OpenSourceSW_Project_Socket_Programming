@@ -28,13 +28,13 @@
         <td><B>참고자료</td>
     </tr>
     <tr>
-        <td rowspan="3">1주(~5월 15일)</td>
+        <td rowspan="1">1주(~5월 15일)</td>
         <td>프로젝트 제안서 작성</td>
         <td>---</td>
         <td>---</td>
     </tr>
     <tr>
-        <td rowspan="2">2주(~5월 22일)</td>
+        <td rowspan="1">2주(~5월 22일)</td>
         <td>---</td>
         <td>---</td>
         <td>---</td>
