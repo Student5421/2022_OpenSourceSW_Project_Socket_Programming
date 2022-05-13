@@ -5,13 +5,13 @@
 
 * *Members*
     - *Student* 김일규, 신수환, 이충훈, 최민아<br>
-        - Main interest : *---*
+        - Main interest : *서버 구조 설계, 사용자 채팅방 초대 기능 구현*
             - 김일규
-        - Main interest : *---*
+        - Main interest : *채팅방 생성/삭제, 사용자의 채팅방 입장 구현*
             - 신수환
-        - Main interest : *---*
+        - Main interest : *클라이언트 구현*
             - 이충훈
-        - Main interest : *---*
+        - Main interest : *하나의 채팅방 내에서 사용자 간의 통신 구현*
             - 최민아
 
 <br>
