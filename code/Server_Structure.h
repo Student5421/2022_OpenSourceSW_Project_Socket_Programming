@@ -2,28 +2,29 @@
 #include <string.h>
 
 #define MAX_ROOM 3
-#define MAX_CURRENT_CLIENT 6
-#define MAX_DATABASE_CLIENT_NUM 20
+#define MAX_ROOM_CLINET 6
+#define MAX_SERVER_CLIENT 10
+#define MAX_DATABASE_CLIENT 20
 
 typedef enum BOOL_ {
 	false, true
 }BOOL;
 
-typedef struct CLIENT_NODE_ {
-	int fd;
-	int id[20];
-	struct CLIENT_NODE *next;
-}CLIENT_NODE, *LPCLIENT_NODE;
+typedef struct CLIENT_ {
+	int fd; //client's fd
+	int id[20]; //client id
+}CLIENT, *LPCLIENT;
 
-typedef structure ROOM_NODE_ {
-	int room_num;
-	LPCLIENT_NODE client_list;
-	struct ROOM_NODE_ *next;
-}ROOM_NODE, *LPROOM_NODE;
+typedef structure ROOM_ {
+	int room_num; //room id
+	int maxfd;
+	fd_set readfds; //for check message from clients which are in room
+	LPCLIENT client_array[MAX_ROOM_CLINET]; //client list about clients connected to room
+}ROOM, *LPROOM;
 
 typedef struct SERVER_DATA_ {
-	LPROOM_NODE room_list;
-	LPCLIENT_NODE client_list;
+	LPROOM room_array[MAX_ROOM]; //room list which server has
+	LPCLIENT client_array[MAX_SERVER_CLIENT] //client list about clients connected to server
 }SERVER_DATA, *LPSERVER_DATA;
 
 typedef struct CLIENT_DATA_ {
@@ -31,5 +32,5 @@ typedef struct CLIENT_DATA_ {
 	char passwd[20];
 }CLIENT_DATA, *LPCLIENT_DATA;
 
-CLIENT_DATA client_database[MAX_DATABASE_CLIENT_NUM];
+CLIENT_DATA client_database[MAX_DATABASE_CLIENT];
 SERVER_DATA server_data;

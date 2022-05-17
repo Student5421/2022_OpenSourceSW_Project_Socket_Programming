@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 
 #include "Server_Structure.h"
 
@@ -9,69 +10,125 @@ void InitServerData() {
 	memset(server_data, 0x00, sizeof(SERVER_DATA));
 }
 
-LPROOM_NODE GetRoomByRoomNum(int room_num) {
-	LPROOM_NODE room_list = server_data.room_list;
-	if(room_list == NULL) return false;
+/* Function of Room & room_list */
 
-	while(room_list->room_num != room_num || room_list != NULL) room_list = room_list->next;
-	if(room_list == NULL) return false;
+BOOL CreateRoom() {
+	//create new room
+	LPROOM new_room = (LPROOM)malloc(sizeof(ROOM));
+	memset(new_room, 0x00, sizeof(ROOM));
+	
+	//add new room to room_list
+	int x = 0;
+	for(x ; x < MAX_ROOM ; x++) 
+		if(server_data.room_array[x] == NULL) {
+			server_data.room_array[x] = new_room;
+			//init fd set
+			FD_ZERO(&(new_room->readfds))
+			break;
+		}
 
-	return room_list;
+	if(x == MAX_ROOM) return false;
+	return true;
 }
 
-	/*					*
-	 *	About Linked List Function	*
-	 *					*/
-
-void AddClientToList(LPCLIENT_NODE head, LPCLIENT_NODE new_client) {
-	if(head == NULL) head = new_client;
-
-	else {
-		LPCLIENT_NODE cur_client = head;
-		while(cur_client->next != NULL) cur_client = cur_client->next;
-		cur_client->next = new_client;
+LPROOM GetRoomByRoomNum(int room_num) {
+	LPROOM cur_room = server_data.room_array;
+	
+	for(int x = 0 ; x < MAX_ROOM ; x++) {
+		if(server_data.room_array[x] == NULL) continue;
+		if(server_data.room_array[x]->room_num == room_num) return server_data.room_array[x];
 	}
+
+	return false;
 }
 
-int AddClient(int client_fd, char *client_id, int room_num) {
-	LPCLIENT_NODE new_client = NULL;
-	if((new_clinet = (LPCLIENT_NODE)malloc(sizeof(CLIENT_NODE))) == NULL) {
-		//error
-		return false;
-	}
+/* Function of client & client_list */
 
-	memset(new_client, 0x00, sizeof(CLIENT_NODE));
+//add client to room
+BOOL AddClientToRoom(LPCLIENT client, int room_num) {
+	LPROOM cur_room = NULL;
+	if((cur_room = GetRoomByRoomNum(room_num)) == false) return false;
+
+	int x = 0;
+	for(x; x < MAX_ROOM_CLINET ; x++)
+		if(cur_room->client_array[x] == NULL) {
+			client_array[x] = client;
+
+			//update fd set
+			FD_SET(cleint->fd, &(cur_room->readfds));
+			if(client->fd > cur_room->maxfd) maxfd = client_sockfd;
+			break;
+		}
+
+	if(x == MAX_ROOM_CLINET) return false;
+	return true;
+}
+
+//delete client from room
+BOOL DeleteClientFromRoom(int client_fd, int room_num) {
+	LPROOM cur_room = NULL;
+	if((cur_room = GetRoomByRoomNum(room_num)) == false) return false;
+
+	int x = 0;
+	for(x; x < MAX_ROOM_CLINET ; x++)
+		if(cur_room->client_array[x] != NULL)
+			if(cur_room->client_array[x]->fd == client_fd) {
+				cur_room->client_array[x] = NULL;
+
+				//update fdset
+				FD_CLR(client_fd, &(cur_room->readfds));
+				break;
+			}
+
+	if(x == MAX_ROOM_CLINET) return false;
+	return true;
+}
+
+BOOL AddToServerData(int client_fd, char *client_id) {
+	//make client struct
+	LPCLIENT new_client = (LPCLIENT)malloc(sizeof(CLIENT));
+	memset(new_client, 0x00, sizeof(CLIENT));
+
 	new_client->fd = client_fd;
 	strcpy(new_client->id, client_id);
 
-	AddClientToList(server_data.client_list, new_client);
+	//add to server_data
+	int x = 0;
+	for(x ; x < MAX_SERVER_CLIENT ; x++)
+		if(server_data.client_array[x] == NULL) {
+			server_data.client_array[x] = new_client;
+			break;
+		}
 
-	LPROOM_NODE room_list = NULL;
-	if(!(room_list = GetRoomByRoomNum(room_num))) return -1;
-	AddClientToList(room_list->client_list, new_client);
-
+	if(x == MAX_SERVER_CLIENT) return false;
 	return true;
 }
 
-BOOL DeleteClientFromList(LPCLIENT_NODE head, int client_fd) {
-	LPCLIENT_NODE cur_client = head;
-	LPCLIENT_NODE delete_node = NULL;
-	while(cur_client->next->fd != client_fd || cur_client->next != NULL) cur_client = cur_client->next;
-	if(cur_client->next == NULL) return false;
+BOOL DeleteFromServerData(int client_fd) {
+	//delete from server_data
+	int x = 0;
+	for(x; x < MAX_SERVER_CLIENT ; x++)
+		if(server_data.client_array[x] != NULL)
+			if(server_data.client_array[x]->fd == client_fd) {
+				server_data.client_array[x] = NULL;
+				break;
+			}
 
-	delete_node = cur_client->next;
-	cur_client->next = delete_node->next;
-	free(delete_node);
-
+	if(x == MAX_ROOM_CLINET) return false;
 	return true;
 }
 
-BOOL DeleteClient(int client_fd, int room_num) {
-	if(!DeleteClientFromList(server_data.client_list, client_fd)) return false;
+LPCLIENT FindClientFromServerData(int cline_fd) {
+	LPCLIENT fclient = NULL;
 
-	LPROOM_NODE room_list = NULL;
-	if(!(room_list = GetRoomByRoomNum(room_num))) return false;
-	if(!DeleteClientFromList(room_list->client_list, client_fd)) return false;
+	int x = 0;
+	for(x; x < MAX_SERVER_CLIENT ; x++)
+		if(server_data.client_array[x] != NULL)
+			if(server_data.client_array[x]->fd == client_fd) {
+				fclient = server_data.client_array[x];
+				break;
+			}
 
-	return true;
+	if(fclient == NULL) return false;
+	return fclient;
 }

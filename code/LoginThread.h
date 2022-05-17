@@ -19,9 +19,10 @@ void LoginThread(void *client_fd) {
 	int client_fd = shared_data->sockfd;
 	char message[MAX_BUF]; memset(message, 0x00, sizeof(message));
 
-	if(!SendMessageToClient(client_fd, "ReadyToLogin")); //quit login thread
-	if(!ReceiveMessageFromClient(client_fd, message); //quit login thread
+	if(!SendMessageToClient(client_fd, "ReadyToLogin")); //if false, quit login thread
+	if(!ReceiveMessageFromClient(client_fd, message)); //if false, quit login thread
 
+	//if service message is 1, 2, ...
 	int select_service = atoi(message);
 
 	switch(select_service) {
@@ -39,7 +40,7 @@ void LoginThread(void *client_fd) {
 
 			//check id and passwd is in client_database
 
-			//if exist, success to login
+			//if exist, success to login -> add to server_data
 
 			//if does not exist, fail to login
 
@@ -48,8 +49,8 @@ void LoginThread(void *client_fd) {
 	}
 
 	memset(message, 0x00, sizeof(message));
-	if(!SendMessageToClient(client_fd, "ReadyToRoomService")); //quit thread
-	if(!ReceiveMessageFromClient(client_fd, message)); //quit thread
+	if(!SendMessageToClient(client_fd, "ReadyToRoomService")); //if false, quit thread
+	if(!ReceiveMessageFromClient(client_fd, message)); //if false, quit thread
 
 	select_service = atoi(message);
 	switch(select_service) {

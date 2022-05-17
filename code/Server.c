@@ -15,13 +15,18 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 
+//about thread
+#include <pthread.h>
+
 #include "Server_Structure.h"
 #include "Server_Structure_Function.h"
+#include "LoginThread.h"
 
 extern CLIENT_DATA client_database[MAX_DATABASE_CLINET_NUM];
 extern SERVER_DATA server_data;
 
 int main(int argc, char **argv) {
+	//declare needed value
 	int server_sockfd; int clinet_sockfd;
 	struct sockaddr_in clinet_addr; struct sockaddr_in server_addr;
 	int client_len = sizeof(client_addr);
@@ -51,6 +56,7 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 
+	//accept client connection
 	while(true) {
 		client_sockfd = accept(server_sockfd, (struct sockaddr *)client_addr, &client_len);
 		if(client_sockfd == -1) {
@@ -61,7 +67,6 @@ int main(int argc, char **argv) {
 		//hand over client_sockfd to login thread
 		pthread_create(&thread_id, NULL, LoginThread, (void *)client_fd);
 		pthread_detach(thread_id);
-
 	}
 
 	close(server_sockfd);
