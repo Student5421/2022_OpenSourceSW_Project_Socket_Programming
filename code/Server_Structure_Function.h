@@ -14,7 +14,7 @@ void InitServerData() {
 
 /* Function of Room & room_list */
 
-BOOL CreateRoom() {
+int CreateRoom() {
 	//create new room
 	LPROOM new_room = (LPROOM)malloc(sizeof(ROOM));
 	memset(new_room, 0x00, sizeof(ROOM));
@@ -23,14 +23,15 @@ BOOL CreateRoom() {
 	int x = 0;
 	for(x ; x < MAX_ROOM ; x++) 
 		if(server_data.room_array[x] == NULL) {
+			new_room->room_num = x;
 			server_data.room_array[x] = new_room;
 			//init fd set
 			FD_ZERO(&(new_room->readfds));
 			break;
 		}
 
-	if(x == MAX_ROOM) return false;
-	return true;
+	if(x == MAX_ROOM) return false;	
+	return x + 1;
 }
 
 LPROOM GetRoomByRoomNum(int room_num) {

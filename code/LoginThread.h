@@ -15,15 +15,21 @@ BOOL ReceiveMessageFromClient(int client_fd, char *message) {
 	return true;
 }
 
-void LoginThread(void *client_fd) {
+void LoginThread(void *shared_data) {
 	int client_fd = shared_data->sockfd;
 	char message[MAX_BUF]; memset(message, 0x00, sizeof(message));
 
 	while(1) {
 		if(!ReceiveMessageFromClient(client_fd, message)); //if false, quit login thread
 		
+		int id_exist = 0;
 		//check id exist server_data array
-		int id_exist = 0; 
+		for (int x = 0; x < MAX_SERVER_CLINET; x++) {
+			if (!strcmp(message, server_data.client_array[x]->id)) {
+				id_exist = 1;
+			}
+		}
+		else id_exist = 0;
 
 		//if exist
 		if(id_exist) if(!SendMessageToClient(client_fd, "AlreadyExist"));
@@ -34,6 +40,14 @@ void LoginThread(void *client_fd) {
 			break;
 		}
 	}
+
+	//make client struct and add to server data
+	LPCLIENT new_client = (LPCLIENT)malloc(sizeof(CLIENT));
+	new_client->fd = client_fd;
+	memset(new_client->id, 0x00, sizeof(new_client->id);
+	strcpy(new_client->id, message);
+
+	AddToServerData(client_fd, message);
 
 	//get clinet service about room
 	int room_service = 0;
@@ -46,17 +60,20 @@ void LoginThread(void *client_fd) {
 
 		switch(room_service) {
 			case 1:
-				//create room
-				success = 1;
+				int room_num
+				if(room_num = CreateRoom()) success = 1;
+				room_num--;
+				if(AddClientToRoom(new_client, room_num)) success = 1;
 				break;
 
 			case 2:
-				//enter room
-				success = 1;
-				break;
+				for (int x = 0; x < MAX_ROOM; x++) {
+					
+				}
 
-			default:
-				//nothing
+
+				if(AddClientToRoom(new_client, room_id)) success = 1;
+				break;
 		}
 
 		if(success) break;

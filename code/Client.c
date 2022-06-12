@@ -10,28 +10,6 @@
 
 #define MAXLINE 1024
 
-void itoa(int num, char *str){
-    int i=0;
-    int radix = 10;
-    int deg=1;
-    int cnt = 0;
-
-    while(1){
-        if( (num/deg) > 0)
-            cnt++;
-        else
-            break;
-        deg *= radix;
-    }
-    deg /=radix; 
-    for(i=0; i<cnt; i++)    {
-        *(str+i) = num/deg + '0';
-        num -= ((num/deg) * deg);
-        deg /=radix;
-    }
-    *(str+i) = '\0';
-} 
-
 void *WriteToServer(void *fd) {
 	int server_sockfd = *((int *)fd);
 	char buf[MAXLINE];
@@ -71,20 +49,6 @@ void PrintLoginService() {
     ");
 }
 
-void PrintRoomService() {
-    printf("
-    +--------------------------------------------+\n
-    |                                             \n
-    |                 Room Service                \n
-    |         select service what you want        \n
-    |               1. create room                \n
-    |               2. enter room                 \n
-    |                                             \n
-    +--------------------------------------------+\n
-    Input service number : 
-    ");
-}
-
 int main(int argc, char **argv) {
     struct sockaddr_in server_addr;
 	int server_sockfd;
@@ -109,7 +73,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
     
-    char check_buffer[40];
+    char check_buffer[10];
 
     while(1) {
         system("clear");
@@ -117,16 +81,15 @@ int main(int argc, char **argv) {
 
         PrintLoginService();
         scanf("%s", user_id);
-        while(getchar() != '\n');
 
         if(write(server_sockfd, user_id, sizeof(user_id)) <= 0) {
-		    printf("write error\nexit program\n");
+		    printf("write error\nexit program");
 		    exit(1);
         }
 
         memset(check_buffer, 0x00, sizeof(check_buffer));
         if(read(server_sockfd, check_buffer, sizeof(check_buffer)) <= 0) {
-		    printf("read error\nexit program\n");
+		    printf("read error\nexit program");
 		    exit(1);
 		}
 
@@ -138,7 +101,7 @@ int main(int argc, char **argv) {
     
     memset(check_buffer, 0x00, sizeof(check_buffer));
     if(read(server_sockfd, check_buffer, sizeof(check_buffer)) <= 0) {
-		printf("read error\nexit program\n");
+		printf("read error\nexit program");
 		exit(1);
 	}
 
@@ -146,77 +109,6 @@ int main(int argc, char **argv) {
         printf("something wrong in communicate with server\n
         exit program\n");
         exit(1);
-    }
-
-    //enter the room
-    int room_service = 0;
-    while(1) {
-        system("clear");
-        PrintRoomService();
-        scanf("%d", &room_service);
-        while(getchar() != '\n');
-
-        switch(room_service) {
-            case 1: //create room
-                if(write(server_sockfd, "CreateRoom", sizeof("CreateRoom")) <= 0) {
-		            printf("write error\nexit program\n");
-		            exit(1);
-                }
-                break;
-
-            case 2:
-                if(write(server_sockfd, "EnterRoom", sizeof("EnterRoom")) <= 0) {
-		            printf("write error\nexit program\n");
-		            exit(1);
-                }
-
-                printf("Room List\n");
-                while(1) {
-                    char temp[30]; memset(temp, 0x00, sizeof(temp));
-                    if(read(server_sockfd, temp, 30)) {
-                        printf("read error\nexit program\n");
-                        exit(1);
-                    }
-
-                    int room_num = -1;
-                    if(strcmp(temp, "Finish")) room_num = atoi(temp);
-                    if(room_num != -1) printf("[%d] room\n");
-                    else break;
-                }
-
-                int room_num = -1;
-                printf("\ninput room number, if you wan't to exit, enter -1\n");
-                printf("input : ");
-                scanf("%d", room_num);
-
-                if(room_num == -1) {
-                    printf("exit program\n")
-                    exit(0);
-                }
-
-                char temp[30]; memset(temp, 0x00, sizeof(temp));
-                itoa(room_num, temp);
-                if(write(server_sockfd, temp, sizeof(temp)) <= 0) {
-		            printf("write error\nexit program\n");
-		            exit(1);
-                }
-
-                break;
-
-            default:
-        }
-
-    }
-
-
-
-    if(read(server_sockfd, check_buffer, sizeof(check_buffer)) <= 0) {
-		printf("read error\nexit program\n");
-		exit(1);
-	}
-
-    if(strcmp(check_buffer, "ReadyToRoomService")) {
-        printf("error to enter room\nexit program\n");
     }
 
 	//read and write at the same time
