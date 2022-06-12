@@ -5,9 +5,11 @@
 
 extern CLIENT_DATA client_database[MAX_DATABASE_CLIENT_NUM];
 extern SERVER_DATA server_data;
+extern pthread_mutex_t mutex[MAX_ROOM];
 
 void InitServerData() {
 	memset(server_data, 0x00, sizeof(SERVER_DATA));
+	for(int x = 0 ; x < MAX_ROOM ; x++) pthread_mutex_init(&(mutex[x]),NULL);
 }
 
 /* Function of Room & room_list */
