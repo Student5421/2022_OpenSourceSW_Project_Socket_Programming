@@ -23,7 +23,7 @@ BOOL CreateRoom() {
 		if(server_data.room_array[x] == NULL) {
 			server_data.room_array[x] = new_room;
 			//init fd set
-			FD_ZERO(&(new_room->readfds))
+			FD_ZERO(&(new_room->readfds));
 			break;
 		}
 
@@ -52,11 +52,16 @@ BOOL AddClientToRoom(LPCLIENT client, int room_num) {
 	int x = 0;
 	for(x; x < MAX_ROOM_CLINET ; x++)
 		if(cur_room->client_array[x] == NULL) {
+			//critical section
+			pthread_mutex_lock(&(mutex[x]));
 			client_array[x] = client;
 
 			//update fd set
 			FD_SET(cleint->fd, &(cur_room->readfds));
 			if(client->fd > cur_room->maxfd) maxfd = client_sockfd;
+
+			//end of critical section
+			pthread_mutex_unlock(&(mutex[x]));
 			break;
 		}
 
@@ -73,10 +78,14 @@ BOOL DeleteClientFromRoom(int client_fd, int room_num) {
 	for(x; x < MAX_ROOM_CLINET ; x++)
 		if(cur_room->client_array[x] != NULL)
 			if(cur_room->client_array[x]->fd == client_fd) {
+				//critical section
+				pthread_mutex_lock(&(mutex[x]));
 				cur_room->client_array[x] = NULL;
 
 				//update fdset
 				FD_CLR(client_fd, &(cur_room->readfds));
+				//end of critical section
+				pthread_mutex_unlock(&(mutex[x]));
 				break;
 			}
 
@@ -95,8 +104,13 @@ BOOL AddToServerData(int client_fd, char *client_id) {
 	//add to server_data
 	int x = 0;
 	for(x ; x < MAX_SERVER_CLIENT ; x++)
+		
 		if(server_data.client_array[x] == NULL) {
+			//critical section
+			pthread_mutex_lock(&(mutex[x]));
 			server_data.client_array[x] = new_client;
+			//end of critical section
+			pthread_mutex_unlock(&(mutex[x]));
 			break;
 		}
 
@@ -110,7 +124,11 @@ BOOL DeleteFromServerData(int client_fd) {
 	for(x; x < MAX_SERVER_CLIENT ; x++)
 		if(server_data.client_array[x] != NULL)
 			if(server_data.client_array[x]->fd == client_fd) {
+				//critical section
+				pthread_mutex_lock(&(mutex[x]));
 				server_data.client_array[x] = NULL;
+				//end of critical section
+				pthread_mutex_unlock(&(mutex[x]));
 				break;
 			}
 

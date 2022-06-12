@@ -27,10 +27,6 @@ typedef struct SERVER_DATA_ {
 	LPCLIENT client_array[MAX_SERVER_CLIENT] //client list about clients connected to server
 }SERVER_DATA, *LPSERVER_DATA;
 
-typedef struct CLIENT_DATA_ {
-	char id[20];
-	char passwd[20];
-}CLIENT_DATA, *LPCLIENT_DATA;
-
-CLIENT_DATA client_database[MAX_DATABASE_CLIENT];
 SERVER_DATA server_data;
+
+pthread_mutex_t mutex[MAX_ROOM];
