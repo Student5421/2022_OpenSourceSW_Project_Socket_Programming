@@ -1,9 +1,9 @@
+#pragma once
+
 #include <string.h>
 
 #include "Server_Structure.h"
 #include "Server_Structure_Function.h"
-
-#define MAX_BUF
 
 void itoa(int num, char *str){
     int i=0;
@@ -29,32 +29,43 @@ void itoa(int num, char *str){
 
 BOOL SendMessageToClient(int client_fd, char *message) {
 	if(write(client_fd, message, MAX_BUF) <= 0) exit(1);
+	printf("send message : %s\n", message);
 	return true;
 }
 
 BOOL ReceiveMessageFromClient(int client_fd, char *message) {
-	if(read(sockfd, message, MAX_BUF) <= 0) exit(1);
+	if(read(client_fd, message, MAX_BUF) <= 0) exit(1);
+	printf("read message : %s\n", message);
 	return true;
 }
 
 void LoginThread(void *shared_data) {
-	int client_fd = shared_data->sockfd;
-	char message[MAX_BUF]; memset(message, 0x00, sizeof(message));
+	int client_fd = *(int *)shared_data;
+	char message[MAX_BUF];
+	memset(message, 0x00, MAX_BUF);
 
 	while(1) {
 		if(!ReceiveMessageFromClient(client_fd, message)); //get user id from client
-		
+		printf("%s\n", message);
 		int id_exist = 0;
-		//check id exist server_data array
-		for (int x = 0; x < MAX_SERVER_CLINET; x++)
+		//check id exist server_data array maybe error in here
+		for (int x = 0; x < MAX_SERVER_CLIENT; x++){
+			if(server_data.client_array[x] == NULL) continue;
 			if (!strcmp(message, server_data.client_array[x]->id)) id_exist = 1;
+		}
+		printf("id_exist : %d\n", id_exist);
 
+		memset(message, 0x00, MAX_BUF);
 		//if exist
-		if(id_exist) if(!SendMessageToClient(client_fd, "AlreadyExist"));
+		if(id_exist) {
+			strcpy(message, "AlreadyExist");
+			if(!SendMessageToClient(client_fd, message));
+		}
 
 		//if not
 		else {
-			if(!SendMessageToClient(client_Fd, "CanUseId"));
+			strcpy(message, "CanUseId");
+			if(!SendMessageToClient(client_fd, message));
 			break;
 		}
 	}
@@ -66,18 +77,20 @@ void LoginThread(void *shared_data) {
 	strcpy(new_client->id, message);
 
 	AddToServerData(client_fd, message);
-	
-	SendMessageToClient(client_fd, "ReadyToRoomService")
+
+	memset(message, 0x00, MAX_BUF);
+	strcpy(message, "ReadyToRoomService");
+	SendMessageToClient(client_fd, message);
 
 	//get clinet service about room
 	int room_service = 0;
 	int success = 0;
-	
+
 	while(1) {
 		memset(message, 0x00, sizeof(message));
-		ReceiveMessageFromClient(client_fd, message)
+		ReceiveMessageFromClient(client_fd, message);
 		if(!strcmp(message, "CreateRoom")) {
-			int room_num
+			int room_num = -1;
 			if(room_num = CreateRoom()) {
 				room_num--;
 				if(AddClientToRoom(new_client, room_num)) success = 1;
@@ -85,30 +98,31 @@ void LoginThread(void *shared_data) {
 		}
 
 		else if(!strcmp(message, "EnterRoom")) {
-			char temp[100]; 
+			char temp[MAX_BUF]; 
+			//error
 			for (int x = 0; x < MAX_ROOM; x++) {
 				if(server_data.room_array[x] != 0) {
-					memset(temp, 0x00, sizeof(temp));
+					memset(temp, 0x00, MAX_BUF);
 					itoa(x, temp);
-					SendMessageToClient(client_fd, temp, sizeof(temp));
+					SendMessageToClient(client_fd, temp);
 				}
 			}
 			memset(temp, 0x00, sizeof(temp));
 			strcpy(temp, "Finish");
-			SendMessageToClient(client_fd, temp, sizeof(temp));
+			SendMessageToClient(client_fd, temp);
 
 			memset(temp, 0x00, sizeof(temp));
 			ReceiveMessageFromClient(client_fd, temp);
-			if(!strcmp(temp, "Quit")) return 0;
+			if(!strcmp(temp, "Quit")) exit(0);
 			int room_num = atoi(temp);
 
-			if(AddClientToRoom(new_client, room_id)) success = 1;
+			if(AddClientToRoom(new_client, room_num)) success = 1;
 			break;
 		}
 
 		if(success) break;
 	}
 
-	memset(message, 0x00, sizeof(message));
-	if(!SendMessageToClient(client_fd, "ReadyToRoomService")); //if false, quit thread
+	memset(message, 0x00, sizeof(message)); strcpy(message, "ReadyToStartChat");
+	if(!SendMessageToClient(client_fd, message)); //if false, quit thread
 }

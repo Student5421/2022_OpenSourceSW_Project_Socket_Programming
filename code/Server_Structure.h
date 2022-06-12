@@ -1,10 +1,12 @@
+#pragma once
+
 #include <stdlib.h>
 #include <string.h>
 
 #define MAX_ROOM 3
 #define MAX_ROOM_CLINET 6
 #define MAX_SERVER_CLIENT 10
-#define MAX_DATABASE_CLIENT 20
+#define MAX_BUF 1024
 
 typedef enum BOOL_ {
 	false, true
@@ -12,10 +14,10 @@ typedef enum BOOL_ {
 
 typedef struct CLIENT_ {
 	int fd; //client's fd
-	int id[20]; //client id
+	char id[50]; //client id
 }CLIENT, *LPCLIENT;
 
-typedef structure ROOM_ {
+typedef struct ROOM_ {
 	int room_num; //room id
 	int maxfd;
 	fd_set readfds; //for check message from clients which are in room
@@ -24,7 +26,7 @@ typedef structure ROOM_ {
 
 typedef struct SERVER_DATA_ {
 	LPROOM room_array[MAX_ROOM]; //room list which server has
-	LPCLIENT client_array[MAX_SERVER_CLIENT] //client list about clients connected to server
+	LPCLIENT client_array[MAX_SERVER_CLIENT]; //client list about clients connected to server
 }SERVER_DATA, *LPSERVER_DATA;
 
 SERVER_DATA server_data;

@@ -1,14 +1,15 @@
+#pragma once
+
 #include <string.h>
 #include <stdlib.h>
 
 #include "Server_Structure.h"
 
-extern CLIENT_DATA client_database[MAX_DATABASE_CLIENT_NUM];
 extern SERVER_DATA server_data;
 extern pthread_mutex_t mutex[MAX_ROOM];
 
 void InitServerData() {
-	memset(server_data, 0x00, sizeof(SERVER_DATA));
+	memset(&server_data, 0x00, sizeof(SERVER_DATA));
 	for(int x = 0 ; x < MAX_ROOM ; x++) pthread_mutex_init(&(mutex[x]),NULL);
 }
 
@@ -35,7 +36,7 @@ int CreateRoom() {
 }
 
 LPROOM GetRoomByRoomNum(int room_num) {
-	LPROOM cur_room = server_data.room_array;
+	LPROOM cur_room = server_data.room_array[room_num];
 	
 	for(int x = 0 ; x < MAX_ROOM ; x++) {
 		if(server_data.room_array[x] == NULL) continue;
@@ -57,11 +58,11 @@ BOOL AddClientToRoom(LPCLIENT client, int room_num) {
 		if(cur_room->client_array[x] == NULL) {
 			//critical section
 			pthread_mutex_lock(&(mutex[x]));
-			client_array[x] = client;
+			cur_room->client_array[x] = client;
 
 			//update fd set
-			FD_SET(cleint->fd, &(cur_room->readfds));
-			if(client->fd > cur_room->maxfd) maxfd = client_sockfd;
+			FD_SET(client->fd, &(cur_room->readfds));
+			if(client->fd > cur_room->maxfd) cur_room->maxfd = client->fd;
 
 			//end of critical section
 			pthread_mutex_unlock(&(mutex[x]));
@@ -139,7 +140,7 @@ BOOL DeleteFromServerData(int client_fd) {
 	return true;
 }
 
-LPCLIENT FindClientFromServerData(int cline_fd) {
+LPCLIENT FindClientFromServerData(int client_fd) {
 	LPCLIENT fclient = NULL;
 
 	int x = 0;

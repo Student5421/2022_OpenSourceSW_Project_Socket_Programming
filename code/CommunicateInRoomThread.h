@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Server_Structure.h"
 #include "Server_Structure_Function"
 #include <string.h>
