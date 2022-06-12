@@ -1,5 +1,6 @@
 #include "Server_Structure.h"
 #include "Server_Structure_Function"
+#include <string.h>
 
 #define MAX_LINE 1024
 
@@ -20,21 +21,33 @@ void *CommunicateWithClient(void *room_num) {
             if(FD_ISSET(cur_sockfd, &allfds)) {
                 //read error
                 if(read(cur_sockfd, buf, MAX_LINE) <= 0) {
-                    //delete from room and server
+                    DeleteFromServerData(client_fd);
+                    DeleteClientFromRoom(client_fd, room_num);
                 }
 
                 //not read error
                 else {
                     //if quit room ("quit\n" can change)
                     if(!strncmp(buf, "quit\n", 5)) {
-                        //delte from room
+                        DeleteFromServerData(client_fd);
+                        DeleteClientFromRoom(client_fd, room_num);
                     }
 
                     //send message to all client except send
                     else {
                         for(int x = 0 ; x < MAX_ROOM_CLINET ; x++)
-                            if(my_room->client_array[x] != NULL && my_room->client_array[x] != cur_sockfd)
-                                write(my_room->client_array[x], buf, strlen(buf));
+                            if(my_room->client_array[x] != NULL && my_room->client_array[x] != cur_sockfd) {
+                                int clinet_index = -1;
+                                int x = 0;
+                                for(x ; x < MAX_SERVER_CLIENT ; x++)
+                                    if(server_data.client_array[x]->fd == cur_sockfd) break;
+                                        
+                                char string[MAX_BUF]; memset(string, 0x00, MAX_BUF);
+                                strcat(string, "["); strcat(string, server_data.client_array[x]->id); strcat(string, "] : ");
+                                strcat(string, buf);
+                                
+                                write(my_room->client_array[x], string, MAX_BUF);
+                            }
                     }
 
                     if(--fd_num <= 0) break;
