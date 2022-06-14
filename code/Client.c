@@ -43,6 +43,8 @@ void *WriteToServer(void *fd) {
 			printf("write error\n");
 			exit(1);
 		}
+
+        if(!strcmp(buf, "quit\n")) exit(1);
 	}
 }
 

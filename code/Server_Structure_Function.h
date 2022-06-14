@@ -27,6 +27,7 @@ int CreateRoom() {
 		if(server_data.room_array[x] == NULL) {
 			new_room->room_num = x + 1;
 			server_data.room_array[x] = new_room;
+			FD_ZERO(&(new_room->readfds));
 			server_data.room_array[x]->maxfd = -1;
 			//init fd set
 			printf("room_num : %d\n", server_data.room_array[x]->room_num);
@@ -61,8 +62,6 @@ BOOL AddClientToRoom(LPCLIENT client, int room_num) {
 			pthread_mutex_lock(&(mutex[x]));
 			cur_room->client_array[x] = client;
 
-			
-			FD_ZERO(&(cur_room->readfds));
 			//update fd set
 			printf("client fd : %d, readfds : %x\n", client->fd, cur_room->readfds);
 			FD_SET(client->fd, &(cur_room->readfds)); //fd set이 제대로 되지 않음
