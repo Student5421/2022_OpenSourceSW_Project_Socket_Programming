@@ -1,9 +1,11 @@
 #pragma once
 
 #include <string.h>
-
+#include <pthread.h>
+#include <unistd.h>
 #include "Server_Structure.h"
 #include "Server_Structure_Function.h"
+#include "CommunicateInRoomThread.h"
 
 void itoa(int num, char *str){
     int i=0;
@@ -44,39 +46,39 @@ void LoginThread(void *shared_data) {
 	char message[MAX_BUF];
 	memset(message, 0x00, MAX_BUF);
 
+	//make client struct and add to server data
+	LPCLIENT new_client = (LPCLIENT)malloc(sizeof(CLIENT));
+	new_client->fd = client_fd;
 	while(1) {
 		if(!ReceiveMessageFromClient(client_fd, message)); //get user id from client
-		printf("%s\n", message);
 		int id_exist = 0;
 		//check id exist server_data array maybe error in here
 		for (int x = 0; x < MAX_SERVER_CLIENT; x++){
 			if(server_data.client_array[x] == NULL) continue;
 			if (!strcmp(message, server_data.client_array[x]->id)) id_exist = 1;
 		}
-		printf("id_exist : %d\n", id_exist);
 
-		memset(message, 0x00, MAX_BUF);
 		//if exist
 		if(id_exist) {
+			memset(message, 0x00, MAX_BUF);
 			strcpy(message, "AlreadyExist");
 			if(!SendMessageToClient(client_fd, message));
 		}
 
 		//if not
 		else {
+			memset(new_client->id, 0x00, sizeof(new_client->id));
+			strcpy(new_client->id, message);
+			printf("new_client->id: %s\n", new_client->id);
+
+			memset(message, 0x00, MAX_BUF);
 			strcpy(message, "CanUseId");
 			if(!SendMessageToClient(client_fd, message));
 			break;
 		}
 	}
 
-	//make client struct and add to server data
-	LPCLIENT new_client = (LPCLIENT)malloc(sizeof(CLIENT));
-	new_client->fd = client_fd;
-	memset(new_client->id, 0x00, sizeof(new_client->id));
-	strcpy(new_client->id, message);
-
-	AddToServerData(client_fd, message);
+	AddToServerData(client_fd, new_client->id);
 
 	memset(message, 0x00, MAX_BUF);
 	strcpy(message, "ReadyToRoomService");
@@ -92,8 +94,11 @@ void LoginThread(void *shared_data) {
 		if(!strcmp(message, "CreateRoom")) {
 			int room_num = -1;
 			if(room_num = CreateRoom()) {
-				room_num--;
+				pthread_t thread_id;
+				pthread_create(&thread_id, NULL, CommunicateWithClient, (void *)&room_num);
+				pthread_detach(thread_id);
 				if(AddClientToRoom(new_client, room_num)) success = 1;
+				sleep(1);	
 			}
 		}
 
@@ -101,13 +106,14 @@ void LoginThread(void *shared_data) {
 			char temp[MAX_BUF]; 
 			//error
 			for (int x = 0; x < MAX_ROOM; x++) {
-				if(server_data.room_array[x] != 0) {
+				if(server_data.room_array[x] != NULL) {
 					memset(temp, 0x00, MAX_BUF);
-					itoa(x, temp);
+					itoa(x + 1, temp);
+					printf("temp : %s\n", temp);
 					SendMessageToClient(client_fd, temp);
 				}
 			}
-			memset(temp, 0x00, sizeof(temp));
+			memset(temp, 0x00, sizeof(temp));	
 			strcpy(temp, "Finish");
 			SendMessageToClient(client_fd, temp);
 

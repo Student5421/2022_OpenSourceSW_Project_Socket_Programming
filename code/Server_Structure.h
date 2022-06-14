@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define MAX_ROOM 3
-#define MAX_ROOM_CLINET 6
+#define MAX_ROOM_CLIENT 6
 #define MAX_SERVER_CLIENT 10
 #define MAX_BUF 1024
 
@@ -14,14 +14,14 @@ typedef enum BOOL_ {
 
 typedef struct CLIENT_ {
 	int fd; //client's fd
-	char id[50]; //client id
+	char id[MAX_BUF]; //client id
 }CLIENT, *LPCLIENT;
 
 typedef struct ROOM_ {
 	int room_num; //room id
 	int maxfd;
 	fd_set readfds; //for check message from clients which are in room
-	LPCLIENT client_array[MAX_ROOM_CLINET]; //client list about clients connected to room
+	LPCLIENT client_array[MAX_ROOM_CLIENT]; //client list about clients connected to room
 }ROOM, *LPROOM;
 
 typedef struct SERVER_DATA_ {

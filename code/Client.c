@@ -56,7 +56,7 @@ void *ReadFromServer(void *fd) {
 			exit(1);
 		}
 
-		printf("from server : %s\n", buf);
+		printf("%s", buf);
 	}
 }
 
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
 
         switch(room_service) {
             case 1: //create room
-		memset(message, 0x00, MAX_BUF); strcpy(message, "CreateRoom");
+		        memset(message, 0x00, MAX_BUF); strcpy(message, "CreateRoom");
                 if(write(server_sockfd, message, MAX_BUF) <= 0) {
 		            printf("write error\nexit program\n");
 		            exit(1);
@@ -165,19 +165,21 @@ int main(int argc, char **argv) {
                 break;
 
             case 2:
-		memset(message, 0x00, MAX_BUF); strcpy(message, "EnterRoom");
+		        memset(message, 0x00, MAX_BUF); strcpy(message, "EnterRoom");
                 if(write(server_sockfd, message, MAX_BUF) <= 0) {
 		            printf("write error\nexit program\n");
 		            exit(1);
                 }
 
-                printf("Room List\n");
+                printf("\nRoom List\n");
                 while(1) {
                     memset(message, 0x00, MAX_BUF);
-                    if(read(server_sockfd, message, 30)) {
-                        printf("Finish read error\nexit program\n");
+                    if(read(server_sockfd, message, MAX_BUF) <= 0) {
+                        printf("Room List read error\nexit program\n");
                         exit(1);
                     }
+
+                    printf("message : %s\n", message);
 
                     int room_num = -1;
                     if(strcmp(message, "Finish")) room_num = atoi(message);
@@ -191,8 +193,8 @@ int main(int argc, char **argv) {
                 scanf("%d", &room_num);
 
                 if(room_num == -1) {
-			memset(message, 0x00, MAX_BUF); strcpy(message, "QUIT");
-			write(server_sockfd, message, MAX_BUF);
+			        memset(message, 0x00, MAX_BUF); strcpy(message, "QUIT");
+			        write(server_sockfd, message, MAX_BUF);
                     printf("exit program\n");
                     exit(0);
                 }
