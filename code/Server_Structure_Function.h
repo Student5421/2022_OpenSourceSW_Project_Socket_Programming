@@ -21,21 +21,23 @@ int CreateRoom() {
 	LPROOM new_room = (LPROOM)malloc(sizeof(ROOM));
 	memset(new_room, 0x00, sizeof(ROOM));
 	
+	int success = 0;
 	//add new room to room_list
 	int x = 0;
 	for(x ; x < MAX_ROOM ; x++) {
 		if(server_data.room_array[x] == NULL) {
 			new_room->room_num = x + 1;
 			server_data.room_array[x] = new_room;
+			
+			//init fd set
 			FD_ZERO(&(new_room->readfds));
 			server_data.room_array[x]->maxfd = -1;
-			//init fd set
-			printf("room_num : %d\n", server_data.room_array[x]->room_num);
+			success = 1;
 			break;
 		}
 	}
 
-	if(x == MAX_ROOM) return false;	
+	if(!success) return 0;	
 	return x + 1;
 }
 
@@ -54,7 +56,6 @@ LPROOM GetRoomByRoomNum(int room_num) {
 BOOL AddClientToRoom(LPCLIENT client, int room_num) {
 	LPROOM cur_room = NULL;
 	if((cur_room = GetRoomByRoomNum(room_num)) == NULL) return false;
-	printf("cur room num : %d\n", cur_room->room_num);
 	int x = 0;
 	for(x; x < MAX_ROOM_CLIENT ; x++)
 		if(cur_room->client_array[x] == NULL) {
@@ -63,10 +64,8 @@ BOOL AddClientToRoom(LPCLIENT client, int room_num) {
 			cur_room->client_array[x] = client;
 
 			//update fd set
-			printf("client fd : %d, readfds : %x\n", client->fd, cur_room->readfds);
-			FD_SET(client->fd, &(cur_room->readfds)); //fd set이 제대로 되지 않음
+			FD_SET(client->fd, &(cur_room->readfds));
 			if(client->fd > cur_room->maxfd) cur_room->maxfd = client->fd;
-			printf("max fd : %d, readfds : 0x%x\n", cur_room->maxfd, cur_room->readfds);
 
 			//end of critical section
 			pthread_mutex_unlock(&(mutex[x]));

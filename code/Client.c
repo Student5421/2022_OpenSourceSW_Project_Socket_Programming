@@ -151,12 +151,14 @@ int main(int argc, char **argv) {
 
 	//enter the room
     int room_service = 0;
+    int enter_room = -1;
     while(1) {
         system("clear");
         PrintRoomService();
         scanf("%d", &room_service);
         while(getchar() != '\n');
 
+        int success = 0;
         switch(room_service) {
             case 1: //create room
 		        memset(message, 0x00, MAX_BUF); strcpy(message, "CreateRoom");
@@ -164,6 +166,20 @@ int main(int argc, char **argv) {
 		            printf("write error\nexit program\n");
 		            exit(1);
                 }
+
+                if(read(server_sockfd, message, MAX_BUF) <=0 ) {
+                    printf("read error\nexit program\n");
+                    exit(1);
+                }
+
+                if(!strcmp(message, "TooManyRoom"))
+                    printf("There is too many room!\nCan't create new room\n");
+
+                else {
+                    enter_room = atoi(message);
+                    success = 1;
+                }
+
                 break;
 
             case 2:
@@ -181,11 +197,13 @@ int main(int argc, char **argv) {
                         exit(1);
                     }
 
-                    printf("message : %s\n", message);
-
                     int room_num = -1;
                     if(strcmp(message, "Finish")) room_num = atoi(message);
-                    if(room_num != -1) printf("[%d] room\n", room_num);
+                    if(room_num != -1) {
+                        printf("[%d] room\n", room_num);
+                        enter_room = room_num;
+                    }
+
                     else break;
                 }
 
@@ -208,7 +226,23 @@ int main(int argc, char **argv) {
 		            exit(1);
                 }
 
+                memset(message, 0x00, MAX_BUF);
+                if(read(server_sockfd, message, MAX_BUF) <= 0) {
+                    printf("read error\nexit program\n");
+                    exit(1);
+                }
+
+                printf("message : %s\n", message);
+                if(!strcmp(message, "EnterRoom")) {
+                    success = 1;
+                    enter_room = room_num;
+                }
                 break;
+        }
+
+        if(!success) {
+            sleep(3);
+            continue;
         }
 
 		memset(message, 0x00, MAX_BUF);
@@ -221,11 +255,11 @@ int main(int argc, char **argv) {
     }
 
 	system("clear");
-	printf("+---------------------------+\n"
-	       "|                           |\n"
-	       "|        Chating Room       |\n"
-	       "|                           |\n"
-               "+---------------------------+\n");
+	printf("+----------------------------+\n"
+	       "|                            |\n"
+	       "|        Chating Room %d      |\n"
+	       "|                            |\n"
+           "+----------------------------+\n", enter_room);
 
 	//read and write at the same time
 	pthread_create(&thread_id[0], NULL, WriteToServer, (void *)&server_sockfd);

@@ -10,10 +10,8 @@ extern SERVER_DATA server_data;
 
 void *CommunicateWithClient(void *shared_data) {
     int room_num = *(int *)shared_data;
-    printf("Create!, shared data : %d\n", room_num);
 
     LPROOM my_room = GetRoomByRoomNum(room_num);
-    printf("my room num : %d\n", my_room->room_num);
     char buf[MAX_LINE];
 
     while(true) {
@@ -25,12 +23,8 @@ void *CommunicateWithClient(void *shared_data) {
         timeout.tv_sec = 2;
         timeout.tv_usec = 0;
 
-        printf("room[%d] -> maxfd : %d\n", room_num, maxfd);
-
         int fd_num = select(maxfd + 1, &allfds, (fd_set *)0, (fd_set *)0, &timeout);
         if(fd_num == 0) continue;
-
-        printf("select finish\n");
 
         for(int cur_sockfd = 0 ; cur_sockfd < maxfd + 1 ; cur_sockfd++) {
             //if message get
@@ -59,14 +53,13 @@ void *CommunicateWithClient(void *shared_data) {
                                     if(my_room->client_array[x]->fd == cur_sockfd)
                                         send_client = my_room->client_array[x];
                         
-                            printf("sender : %s\n", send_client->id);
                             char string[MAX_BUF]; memset(string, 0x00, MAX_BUF);
                             strcat(string, "["); 
                             strcat(string, send_client->id); 
                             strcat(string, "] : ");
                             strcat(string, buf);
                         
-                            printf("fd %d : %s\n", cur_sockfd, string);
+                            printf("room[%d] %s", room_num, string);
                         
                             for(int x = 0 ; x < MAX_ROOM_CLIENT ; x++)
                                 if(my_room->client_array[x] != NULL) 

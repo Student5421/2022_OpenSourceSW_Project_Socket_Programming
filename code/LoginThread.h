@@ -31,13 +31,11 @@ void itoa(int num, char *str){
 
 BOOL SendMessageToClient(int client_fd, char *message) {
 	if(write(client_fd, message, MAX_BUF) <= 0) exit(1);
-	printf("send message : %s\n", message);
 	return true;
 }
 
 BOOL ReceiveMessageFromClient(int client_fd, char *message) {
 	if(read(client_fd, message, MAX_BUF) <= 0) exit(1);
-	printf("read message : %s\n", message);
 	return true;
 }
 
@@ -69,7 +67,6 @@ void LoginThread(void *shared_data) {
 		else {
 			memset(new_client->id, 0x00, sizeof(new_client->id));
 			strcpy(new_client->id, message);
-			printf("new_client->id: %s\n", new_client->id);
 
 			memset(message, 0x00, MAX_BUF);
 			strcpy(message, "CanUseId");
@@ -98,7 +95,16 @@ void LoginThread(void *shared_data) {
 				pthread_create(&thread_id, NULL, CommunicateWithClient, (void *)&room_num);
 				pthread_detach(thread_id);
 				if(AddClientToRoom(new_client, room_num)) success = 1;
-				sleep(1);	
+				sleep(1);
+				memset(message, 0x00, MAX_BUF);
+				itoa(room_num, message);
+				SendMessageToClient(client_fd, message);	
+			}
+
+			else {
+				memset(message, 0x00, MAX_BUF);
+				strcpy(message, "TooManyRoom");
+				SendMessageToClient(client_fd, message);
 			}
 		}
 
@@ -109,7 +115,6 @@ void LoginThread(void *shared_data) {
 				if(server_data.room_array[x] != NULL) {
 					memset(temp, 0x00, MAX_BUF);
 					itoa(x + 1, temp);
-					printf("temp : %s\n", temp);
 					SendMessageToClient(client_fd, temp);
 				}
 			}
@@ -122,7 +127,12 @@ void LoginThread(void *shared_data) {
 			if(!strcmp(temp, "Quit")) exit(0);
 			int room_num = atoi(temp);
 
-			if(AddClientToRoom(new_client, room_num)) success = 1;
+			if(AddClientToRoom(new_client, room_num))
+				success = 1;
+
+			memset(message, 0x00, MAX_BUF);
+			strcpy(message, "EnterRoom");
+			SendMessageToClient(client_fd, message);
 			break;
 		}
 
