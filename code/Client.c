@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
                 }
 
                 if(!strcmp(message, "TooManyRoom"))
-                    printf("There is too many room!\nCan't create new room\n");
+                    printf("There is too many room!\nCan't create new room\nRestart Create/Enter Room Service\n");
 
                 else {
                     enter_room = atoi(message);

@@ -157,3 +157,13 @@ LPCLIENT FindClientFromServerData(int client_fd) {
 	if(fclient == NULL) return false;
 	return fclient;
 }
+
+void DeleteRoom(int room_num) {
+	for(int x = 0 ; x < MAX_ROOM ; x++) {
+		if(server_data.room_array[x] == NULL) continue;
+		if(server_data.room_array[x]->room_num == room_num) {
+			free(server_data.room_array[x]);
+			server_data.room_array[x] = NULL;
+		}
+	}
+}

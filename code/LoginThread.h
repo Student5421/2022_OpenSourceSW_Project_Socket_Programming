@@ -30,12 +30,18 @@ void itoa(int num, char *str){
 } 
 
 BOOL SendMessageToClient(int client_fd, char *message) {
-	if(write(client_fd, message, MAX_BUF) <= 0) exit(1);
+	if(write(client_fd, message, MAX_BUF) <= 0) {
+		printf("write error in SendMessageToClient\n");	
+		exit(1);
+	}
 	return true;
 }
 
 BOOL ReceiveMessageFromClient(int client_fd, char *message) {
-	if(read(client_fd, message, MAX_BUF) <= 0) exit(1);
+	if(read(client_fd, message, MAX_BUF) <= 0) {
+		printf("read error in ReadMessageFromClient\n");
+		exit(1);
+	}
 	return true;
 }
 
@@ -84,6 +90,7 @@ void LoginThread(void *shared_data) {
 	//get clinet service about room
 	int room_service = 0;
 	int success = 0;
+	int quit = 0;
 
 	while(1) {
 		memset(message, 0x00, sizeof(message));
@@ -91,10 +98,10 @@ void LoginThread(void *shared_data) {
 		if(!strcmp(message, "CreateRoom")) {
 			int room_num = -1;
 			if(room_num = CreateRoom()) {
+				if(AddClientToRoom(new_client, room_num)) success = 1;
 				pthread_t thread_id;
 				pthread_create(&thread_id, NULL, CommunicateWithClient, (void *)&room_num);
 				pthread_detach(thread_id);
-				if(AddClientToRoom(new_client, room_num)) success = 1;
 				sleep(1);
 				memset(message, 0x00, MAX_BUF);
 				itoa(room_num, message);
@@ -124,7 +131,11 @@ void LoginThread(void *shared_data) {
 
 			memset(temp, 0x00, sizeof(temp));
 			ReceiveMessageFromClient(client_fd, temp);
-			if(!strcmp(temp, "Quit")) exit(0);
+			if(!strcmp(temp, "QUIT")) {
+				DeleteFromServerData(client_fd);
+				quit = 1;
+				break;
+			}
 			int room_num = atoi(temp);
 
 			if(AddClientToRoom(new_client, room_num))
@@ -137,8 +148,11 @@ void LoginThread(void *shared_data) {
 		}
 
 		if(success) break;
+		if(quit) break;
 	}
 
-	memset(message, 0x00, sizeof(message)); strcpy(message, "ReadyToStartChat");
-	if(!SendMessageToClient(client_fd, message)); //if false, quit thread
+	if(!quit) {
+		memset(message, 0x00, sizeof(message)); strcpy(message, "ReadyToStartChat");
+		if(!SendMessageToClient(client_fd, message)); //if false, quit thread
+	}
 }

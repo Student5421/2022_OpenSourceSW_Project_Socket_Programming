@@ -14,9 +14,19 @@ void *CommunicateWithClient(void *shared_data) {
     LPROOM my_room = GetRoomByRoomNum(room_num);
     char buf[MAX_LINE];
 
+    fd_set nullfds; FD_ZERO(&nullfds);
+
     while(true) {
         fd_set allfds = my_room->readfds;
         int maxfd = my_room->maxfd;
+
+        int bit_count = 0;
+        for(bit_count = 0 ; bit_count < 16 ; bit_count++)
+            if(allfds.__fds_bits[bit_count] != nullfds.__fds_bits[bit_count])
+                break;
+
+        if(bit_count == 16) break;
+
         memset(buf, 0x00, sizeof(buf));
         
         struct timeval timeout;
@@ -73,4 +83,6 @@ void *CommunicateWithClient(void *shared_data) {
             }
         }
     }
+
+    DeleteRoom(room_num);
 }
