@@ -137,6 +137,7 @@ void LoginThread(void *shared_data) {
 				break;
 			}
 			int room_num = atoi(temp);
+			if(room_num == 4) continue;
 
 			if(AddClientToRoom(new_client, room_num))
 				success = 1;

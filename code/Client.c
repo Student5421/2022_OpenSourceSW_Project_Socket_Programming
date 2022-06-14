@@ -159,6 +159,7 @@ int main(int argc, char **argv) {
         while(getchar() != '\n');
 
         int success = 0;
+        int room_num_array[3] = {0, };
         switch(room_service) {
             case 1: //create room
 		        memset(message, 0x00, MAX_BUF); strcpy(message, "CreateRoom");
@@ -189,6 +190,7 @@ int main(int argc, char **argv) {
 		            exit(1);
                 }
 
+                int room_num_array_index = 0;
                 printf("\nRoom List\n");
                 while(1) {
                     memset(message, 0x00, MAX_BUF);
@@ -200,8 +202,9 @@ int main(int argc, char **argv) {
                     int room_num = -1;
                     if(strcmp(message, "Finish")) room_num = atoi(message);
                     if(room_num != -1) {
+                        room_num_array[room_num_array_index] = room_num;
+                        room_num_array_index++;
                         printf("[%d] room\n", room_num);
-                        enter_room = room_num;
                     }
 
                     else break;
@@ -217,6 +220,21 @@ int main(int argc, char **argv) {
 			        write(server_sockfd, message, MAX_BUF);
                     printf("exit program\n");
                     exit(0);
+                }
+
+                int room_num_exist = 0;
+                for(int x = 0 ; x < 3 ; x++)
+                    if(room_num_array[x] == room_num) {
+                        room_num_exist = 1;
+                        break;
+                    }
+
+                if(!room_num_exist) {
+                    memset(message, 0x00, MAX_BUF); strcpy(message, "4");
+                    write(server_sockfd, message, MAX_BUF);
+                    printf("This room is not exist\n");
+                    sleep(2);
+                    continue;
                 }
 
                 memset(message, 0x00, MAX_BUF);
